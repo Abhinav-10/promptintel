@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}My Prompts{% endblock %}
+
+{% block content %}
+<div class="page-header flex justify-between items-center">
+    <div>
+        <h1>My Prompts</h1>
+        <p>Manage and track your prompt library</p>
+    </div>
+    <a href="/prompts/new/" class="button button-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Prompt
+    </a>
+</div>
+
+<div class="card">
+    <div class="filter-bar mb-4">
+        <form method="get" style="display: flex; align-items: center; gap: 12px;">
+            <label style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 14px;">Sort by</span>
+                <select name="sort" onchange="this.form.submit()" style="margin: 0; width: auto;">
+                    <option value="best_score" {% if sort == "best_score" %}selected{% endif %}>Best Score</option>
+                    <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest First</option>
+                    <option value="highest_rated" {% if sort == "highest_rated" %}selected{% endif %}>Highest Rated</option>
+                    <option value="most_reused" {% if sort == "most_reused" %}selected{% endif %}>Most Reused</option>
+                    <option value="highest_outcome" {% if sort == "highest_outcome" %}selected{% endif %}>Highest Outcome</option>
+                </select>
+            </label>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title / Prompt</th>
+                <th>Category</th>
+                <th>Rating</th>
+                <th>Reused</th>
+                <th>Outcome</th>
+                <th>Score</th>
+                <th style="width: 60px;">Public</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prompt in prompts %}
+            <tr>
+                <td>
+                    <a href="{% url 'prompts:detail' prompt.pk %}" style="font-weight: 600;">
+                        {{ prompt.title|default:prompt.prompt_text|truncatechars:60 }}
+                    </a>
+                    <div class="prompt-preview" style="margin-top: 8px; max-width: 400px;">
+                        {{ prompt.prompt_text|truncatechars:100 }}
+                    </div>
+                </td>
+                <td><span class="tag tag-primary">{{ prompt.get_category_display }}</span></td>
+                <td>
+                    <div class="rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= prompt.rating %}
+                                <span class="star">★</span>
+                            {% else %}
+                                <span class="star-empty">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>
+                    <span class="badge badge-primary">{{ prompt.reuse_count }}×</span>
+                </td>
+                <td>
+                    {% if prompt.outcome_metric %}
+                        <span class="badge badge-success">{{ prompt.outcome_value }} {{ prompt.get_outcome_metric_display }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td><span class="score">{{ prompt.score }}</span></td>
+                <td>
+                    {% if prompt.is_public %}
+                        <span class="public-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <h3>No prompts yet</h3>
+                        <p>Start building your prompt library</p>
+                        <a href="/prompts/new/" class="button button-primary">Create Your First Prompt</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}" class="button button-secondary button-sm">← Previous</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}" class="button button-secondary button-sm">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

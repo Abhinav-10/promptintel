@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if mode == "update" %}Edit Prompt{% else %}Create Prompt{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center gap-2 mb-2">
+        <a href="/prompts/" class="text-muted" style="text-decoration: none;">← Back to Prompts</a>
+    </div>
+    <h1>{% if mode == "update" %}Edit Prompt{% else %}Create New Prompt{% endif %}</h1>
+    <p>{% if mode == "update" %}Update your prompt details{% else %}Add a new prompt to your library{% endif %}</p>
+</div>
+
+<div class="grid grid-2">
+    <div>
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="card" style="background: rgba(239,68,68,0.1); border-color: var(--danger);">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="card">
+                <h2>Basic Information</h2>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="form-error">{{ form.title.errors }}</div>{% endif %}
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">{{ form.source.label }}</label>
+                        {{ form.source }}
+                        {% if form.source.errors %}<div class="form-error">{{ form.source.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<div class="form-error">{{ form.category.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.tags_input.label }}</label>
+                    {{ form.tags_input }}
+                    <div class="form-hint">Separate tags with commas (e.g., coding, python, automation)</div>
+                    {% if form.tags_input.errors %}<div class="form-error">{{ form.tags_input.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Prompt Content</h2>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.prompt_text.label }} <span style="color: var(--danger);">*</span></label>
+                    {{ form.prompt_text }}
+                    {% if form.prompt_text.errors %}<div class="form-error">{{ form.prompt_text.errors }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.response_text.label }}</label>
+                    {{ form.response_text }}
+                    <div class="form-hint">Paste the AI's response to track what worked</div>
+                    {% if form.response_text.errors %}<div class="form-error">{{ form.response_text.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Performance Tracking</h2>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">{{ form.rating.label }} (0-5)</label>
+                        {{ form.rating }}
+                        <div class="form-hint">How effective was this prompt?</div>
+                        {% if form.rating.errors %}<div class="form-error">{{ form.rating.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form.reuse_count.label }}</label>
+                        {{ form.reuse_count }}
+                        <div class="form-hint">How many times have you used this?</div>
+                        {% if form.reuse_count.errors %}<div class="form-error">{{ form.reuse_count.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">{{ form.outcome_metric.label }}</label>
+                        {{ form.outcome_metric }}
+                        {% if form.outcome_metric.errors %}<div class="form-error">{{ form.outcome_metric.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form.outcome_value.label }}</label>
+                        {{ form.outcome_value }}
+                        {% if form.outcome_value.errors %}<div class="form-error">{{ form.outcome_value.errors }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Additional Notes</h2>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    <div class="form-hint">Add any context or learnings about this prompt</div>
+                    {% if form.notes.errors %}<div class="form-error">{{ form.notes.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Visibility</h2>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: flex; align-items: flex-start; gap: 12px; margin: 0; cursor: pointer;">
+                        {{ form.is_public }}
+                        <div>
+                            <span style="font-weight: 600;">Make this prompt public</span>
+                            <div class="form-hint" style="margin-top: 4px;">
+                                By enabling this, your prompt will be visible to all users on the public Explore page. 
+                                Your username will be displayed as the author.
+                            </div>
+                        </div>
+                    </label>
+                    {% if form.is_public.errors %}<div class="form-error">{{ form.is_public.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="button button-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    {% if mode == "update" %}Save Changes{% else %}Create Prompt{% endif %}
+                </button>
+                <a href="/prompts/" class="button button-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <div class="card" style="position: sticky; top: 88px;">
+            <h2>Tips for Great Prompts</h2>
+            <div style="margin-top: 16px;">
+                <div style="margin-bottom: 16px;">
+                    <strong style="display: block; margin-bottom: 4px;">Be Specific</strong>
+                    <span class="text-muted" style="font-size: 14px;">Include context, constraints, and desired output format</span>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <strong style="display: block; margin-bottom: 4px;">Track Performance</strong>
+                    <span class="text-muted" style="font-size: 14px;">Rate your prompts to identify what works best</span>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <strong style="display: block; margin-bottom: 4px;">Iterate</strong>
+                    <span class="text-muted" style="font-size: 14px;">Refine prompts based on results and reuse count</span>
+                </div>
+                <div>
+                    <strong style="display: block; margin-bottom: 4px;">Share Insights</strong>
+                    <span class="text-muted" style="font-size: 14px;">Make prompts public to help the community</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

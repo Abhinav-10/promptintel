@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="page-header text-center" style="max-width: 600px; margin: 0 auto 32px;">
+    <h1>Top Prompts Leaderboard</h1>
+    <p>Your highest-scoring prompts ranked by performance</p>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 70px;">Rank</th>
+                <th>Prompt</th>
+                <th>Category</th>
+                <th>Rating</th>
+                <th>Outcome</th>
+                <th style="text-align: right;">Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prompt in top_prompts %}
+            <tr>
+                <td>
+                    <span class="rank {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
+                        {% if forloop.counter == 1 %}
+                            🥇
+                        {% elif forloop.counter == 2 %}
+                            🥈
+                        {% elif forloop.counter == 3 %}
+                            🥉
+                        {% else %}
+                            {{ forloop.counter }}
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'prompts:detail' prompt.pk %}" style="font-weight: 600;">
+                        {{ prompt.title|default:prompt.prompt_text|truncatechars:60 }}
+                    </a>
+                    <div class="meta mt-2">{{ prompt.prompt_text|truncatechars:80 }}</div>
+                </td>
+                <td><span class="tag tag-primary">{{ prompt.get_category_display }}</span></td>
+                <td>
+                    <div class="rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= prompt.rating %}
+                                <span class="star">★</span>
+                            {% else %}
+                                <span class="star-empty">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>
+                    {% if prompt.outcome_metric %}
+                        <span class="badge badge-success">{{ prompt.outcome_value }} {{ prompt.get_outcome_metric_display }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    <span class="score" style="font-size: 18px;">{{ prompt.score }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M8 21h8m-4-4v4m-4.5-9.5L12 8l4.5 3.5M7 21V11l5-4 5 4v10"></path>
+                        </svg>
+                        <h3>No ranked prompts yet</h3>
+                        <p>Create and rate your prompts to see them on the leaderboard</p>
+                        <a href="/prompts/new/" class="button button-primary">Create Your First Prompt</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if top_prompts %}
+<div class="card text-center" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);">
+    <h3 style="margin: 0 0 8px 0;">Want to climb the leaderboard?</h3>
+    <p class="text-muted" style="margin: 0 0 16px 0;">Create high-quality prompts, track outcomes, and improve your scores</p>
+    <a href="/prompts/new/" class="button button-primary">Add New Prompt</a>
+</div>
+{% endif %}
+{% endblock %}

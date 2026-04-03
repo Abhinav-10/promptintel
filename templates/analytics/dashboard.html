@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Welcome back{% if request.user.is_authenticated %}, {{ request.user.username }}{% endif %}</h1>
+    <p>Here's an overview of your prompt performance</p>
+</div>
+
+<div class="grid grid-4">
+    <div class="card stat-card">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </div>
+        <div class="stat-value">{{ summary.total_prompts|default:"0" }}</div>
+        <div class="stat-label">Total Prompts</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+        </div>
+        <div class="stat-value">{{ summary.average_rating|floatformat:1|default:"0" }}</div>
+        <div class="stat-label">Avg Rating</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+        </div>
+        <div class="stat-value">{{ summary.average_score|floatformat:0|default:"0" }}</div>
+        <div class="stat-label">Avg Score</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+        </div>
+        <div class="stat-value">{{ summary.top_category|default:"—" }}</div>
+        <div class="stat-label">Top Category</div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h2>Top Performing Prompts</h2>
+            <a href="/prompts/" class="button button-secondary button-sm">View All</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Prompt</th>
+                    <th>Category</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prompt in prompts %}
+                <tr>
+                    <td>
+                        <a href="{% url 'prompts:detail' prompt.pk %}">
+                            {{ prompt.title|default:prompt.prompt_text|truncatechars:50 }}
+                        </a>
+                    </td>
+                    <td><span class="tag">{{ prompt.get_category_display }}</span></td>
+                    <td><span class="score">{{ prompt.score }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <h3>No prompts yet</h3>
+                            <p>Create your first prompt to get started</p>
+                            <a href="/prompts/new/" class="button button-primary">Create Prompt</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Leaderboard Preview</h2>
+            <a href="/leaderboard/" class="button button-secondary button-sm">Full Board</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Rank</th>
+                    <th>Prompt</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prompt in top_prompts %}
+                <tr>
+                    <td>
+                        <span class="rank {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
+                            {{ forloop.counter }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'prompts:detail' prompt.pk %}">
+                            {{ prompt.title|default:prompt.prompt_text|truncatechars:40 }}
+                        </a>
+                    </td>
+                    <td><span class="score">{{ prompt.score }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted" style="padding: 24px;">
+                        No ranked prompts yet
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

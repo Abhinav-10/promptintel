@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Prompts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Explore Prompts</h1>
+    <p>Discover prompts shared by the community</p>
+</div>
+
+<div class="card">
+    <div class="filter-bar">
+        <form method="get" style="display: flex; align-items: center; gap: 12px;">
+            <label style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 14px;">Sort by</span>
+                <select name="sort" onchange="this.form.submit()" style="margin: 0; width: auto;">
+                    <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
+                    <option value="best_score" {% if sort == "best_score" %}selected{% endif %}>Best Score</option>
+                    <option value="highest_rated" {% if sort == "highest_rated" %}selected{% endif %}>Highest Rated</option>
+                    <option value="most_reused" {% if sort == "most_reused" %}selected{% endif %}>Most Reused</option>
+                    <option value="highest_outcome" {% if sort == "highest_outcome" %}selected{% endif %}>Highest Outcome</option>
+                </select>
+            </label>
+        </form>
+    </div>
+</div>
+
+{% for prompt in prompts %}
+<div class="card" style="transition: all 0.2s ease;">
+    <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-4">
+            <div class="avatar" style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                {{ prompt.user.username|slice:":1"|upper }}
+            </div>
+            <div>
+                <strong>{{ prompt.user.username }}</strong>
+                <div class="meta">{{ prompt.created_at|date:"M d, Y" }}</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="tag tag-primary">{{ prompt.get_category_display }}</span>
+            <div class="rating">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= prompt.rating %}
+                        <span class="star">★</span>
+                    {% else %}
+                        <span class="star-empty">★</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <h3 style="margin: 0 0 12px 0; font-size: 18px;">
+        {{ prompt.title|default:"Untitled Prompt" }}
+    </h3>
+
+    <div class="prompt-preview" style="margin-bottom: 16px;">
+        {{ prompt.prompt_text|truncatechars:300 }}
+    </div>
+
+    <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            {% for tag in prompt.tags.all|slice:":4" %}
+                <span class="tag">{{ tag.name }}</span>
+            {% endfor %}
+            {% if prompt.tags.count > 4 %}
+                <span class="tag">+{{ prompt.tags.count|add:"-4" }} more</span>
+            {% endif %}
+        </div>
+        <div class="flex items-center gap-4">
+            {% if prompt.outcome_metric %}
+                <span class="badge badge-success">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    {{ prompt.outcome_value }} {{ prompt.get_outcome_metric_display }}
+                </span>
+            {% endif %}
+            <span class="score" style="font-size: 16px;">Score: {{ prompt.score }}</span>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="card">
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <h3>No public prompts yet</h3>
+        <p>Be the first to share a prompt with the community!</p>
+        {% if request.user.is_authenticated %}
+            <a href="/prompts/new/" class="button button-primary">Share a Prompt</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="button button-primary">Login to Share</a>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}" class="button button-secondary button-sm">← Previous</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}" class="button button-secondary button-sm">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
