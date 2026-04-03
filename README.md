@@ -42,14 +42,14 @@ templates/     # HTML templates for all pages
 ## Setup (Local)
 
 1. Create and activate a virtual environment.
-2. Install Django.
+2. Install dependencies.
 3. Run migrations.
 4. Start the server.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install "Django>=4.2,<5"
+pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
@@ -119,6 +119,51 @@ Run this before pushing:
 
 ```bash
 python manage.py check
+```
+
+## Production Notes (SQLite for 20-50 Users)
+
+This project is configured to remain on SQLite for small workloads (roughly 20-50 active users) while still supporting production-safe settings.
+
+### Environment Configuration
+
+Copy `.env.example` values into your deployment environment:
+
+- `DJANGO_SECRET_KEY`: required in production.
+- `DJANGO_DEBUG`: set to `False` in production.
+- `DJANGO_ALLOWED_HOSTS`: comma-separated hostnames.
+- `DJANGO_CSRF_TRUSTED_ORIGINS`: comma-separated HTTPS origins.
+- `SQLITE_NAME`, `SQLITE_TIMEOUT`, `DB_CONN_MAX_AGE`: SQLite tuning.
+- `DJANGO_USE_X_FORWARDED_HOST`, `DJANGO_USE_PROXY_SSL_HEADER`: keep `True` behind reverse proxies/load balancers.
+
+### Install + Run (Gunicorn)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
+```
+
+### Security Checklist for Production
+
+- Set `DJANGO_DEBUG=False`
+- Set a strong `DJANGO_SECRET_KEY`
+- Set `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS`
+- Serve app behind HTTPS
+- If HTTPS is enforced at your proxy, keep:
+  - `DJANGO_SECURE_SSL_REDIRECT=True`
+  - `DJANGO_USE_PROXY_SSL_HEADER=True`
+  - HSTS env vars (`DJANGO_SECURE_HSTS_*`)
+
+### Deployment Validation
+
+Run:
+
+```bash
+DJANGO_DEBUG=False python manage.py check --deploy
 ```
 
 ## Future Improvements
