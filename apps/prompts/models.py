@@ -22,12 +22,17 @@ class PromptSource(models.TextChoices):
 
 
 class OutcomeMetric(models.TextChoices):
-    VIEWS = "views", "Views"
-    CLICKS = "clicks", "Clicks"
-    LEADS = "leads", "Leads"
-    REVENUE = "revenue", "Revenue"
+    TASKS_COMPLETED = "tasks_completed", "Tasks Completed"
+    QUALITY_SCORE = "quality_score", "Quality Score"
+    ACCURACY = "accuracy", "Accuracy"
+    USER_SATISFACTION = "user_satisfaction", "User Satisfaction"
+    COST_SAVED = "cost_saved", "Cost Saved"
     TIME_SAVED = "time_saved", "Time Saved"
-    OTHER = "other", "Other"
+    REVENUE = "revenue", "Revenue Impact"
+    VIEWS = "views", "Views / Reach"
+    CLICKS = "clicks", "Action Clicks"
+    LEADS = "leads", "Lead Generation"
+    OTHER = "other", "Custom Metric"
 
 
 class Tag(UUIDModel, TimeStampedModel):
